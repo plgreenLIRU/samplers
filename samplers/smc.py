@@ -4,16 +4,17 @@ class Proposal_Base:
     def __init__(self):
         pass
 
-    def rvs(self, Ns, x_cond=None):
+    def rvs(self, x_cond):
         pass
 
-    def logpdf(self, x_cond=None):
+    def logpdf(self, x, x_cond):
         pass
 
 class SMC:
-    def __init__(self, log_target, proposal0):
+    def __init__(self, log_target, proposal0, proposal):
         self.log_target = log_target
         self.proposal0 = proposal0
+        self.proposal = proposal
 
     def find_normalised_weights(self, log_weights):
 
@@ -40,7 +41,8 @@ class SMC:
 
         indices = np.random.choice(len(samples), size=len(weights), replace=True, p=weights)
         resampled_samples = samples[indices]
-        return resampled_samples
+        resampled_weights = np.repeat(1/len(samples), len(samples))
+        return resampled_samples, resampled_weights
 
     def generate_samples(self, data, n_samples):
         
@@ -53,22 +55,36 @@ class SMC:
         log_weights = []
         for x in X:
             log_weights.append(self.log_target(x, data) - self.proposal0.pdf(x))
-
-        # Convert to array
         log_weights = np.array(log_weights)
 
-        # Find normalised
-        w = self.find_normalised_weights(log_weights)
+        for k in range(10):
 
-        # Compute estimates
-        mean, cov = self.find_mean_cov(X, w)
-        
-        ess = self.find_ESS(w)
+            # Find normalised weights
+            weights = self.find_normalised_weights(log_weights)
 
-        print(mean)
-        print(cov)
-        print(ess)
+            # Compute estimates
+            mean, cov = self.find_mean_cov(X, weights)
+            print(mean)
+            
+            # Resample option
+            ess = self.find_ESS(weights)
+            if ess < 50:
+                print('resampled')
+                X, weights = self.resample(X, weights)
+                log_weights = np.log(weights)
 
-        if ess < 50:
-            print('resampled')
-            X = self.resample(X, w)
+            # Propose new
+            X_new = []
+            for x in X:
+                x_new = self.proposal.rvs(x_cond=x)
+                X_new.append(x_new)
+            X_new = np.array(X_new)
+
+            # Compute new weights (assuming L-kernel cancels for now)
+            log_weights_new = []
+            for x, x_new, logw in zip(X, X_new, log_weights):
+                log_weights_new.append(self.log_target(x_new, data=data) - self.log_target(x, data=data) + logw)
+
+            # Update
+            log_weights = np.copy(log_weights_new)
+            X = np.copy(X_new)

@@ -16,7 +16,7 @@ q0 = norm(loc=0, scale=3)
 class Proposal(Proposal_Base):
 
     def __init__(self):
-        self.std = 0.1
+        self.std = 0.05
 
     def rvs(self, x_cond):
         x_new = x_cond + self.std * np.random.randn()
@@ -27,4 +27,4 @@ class Proposal(Proposal_Base):
 
 q = Proposal()
 smc = SMC(log_target=logp, proposal0=q0, proposal=q)
-smc.generate_samples(n_samples=100, data=None, K=100)
+smc.generate_samples(n_samples=1000, data=None, K=100)

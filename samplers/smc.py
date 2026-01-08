@@ -44,11 +44,11 @@ class SMC:
         resampled_weights = np.repeat(1/len(samples), len(samples))
         return resampled_samples, resampled_weights
 
-    def generate_samples(self, data, n_samples):
+    def generate_samples(self, data, n_samples, K):
         
         # Initialise estimates
-        estimated_mean = []
-        estimated_cov = []
+        running_mean = []
+        running_ess = []
 
         # Initial samples
         X = self.proposal0.rvs(n_samples)
@@ -57,17 +57,18 @@ class SMC:
             log_weights.append(self.log_target(x, data) - self.proposal0.pdf(x))
         log_weights = np.array(log_weights)
 
-        for k in range(10):
+        for k in range(K):
 
             # Find normalised weights
             weights = self.find_normalised_weights(log_weights)
 
             # Compute estimates
             mean, cov = self.find_mean_cov(X, weights)
-            print(mean)
+            running_mean.append(mean)
             
             # Resample option
             ess = self.find_ESS(weights)
+            running_ess.append(ess)
             if ess < 50:
                 print('resampled')
                 X, weights = self.resample(X, weights)

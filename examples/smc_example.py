@@ -27,4 +27,4 @@ class Proposal(Proposal_Base):
 
 q = Proposal()
 smc = SMC(log_target=logp, proposal0=q0, proposal=q)
-smc.generate_samples(n_samples=100, data=None)
+smc.generate_samples(n_samples=100, data=None, K=100)

@@ -11,10 +11,11 @@ class Proposal_Base:
         pass
 
 class SMC:
-    def __init__(self, log_target, proposal0, proposal):
+    def __init__(self, log_target, proposal0, proposal, L_kernel):
         self.log_target = log_target
         self.proposal0 = proposal0
         self.proposal = proposal
+        self.L_kernel = L_kernel
 
     def find_normalised_weights(self, log_weights):
 
@@ -114,9 +115,7 @@ class SMC:
             plt.tight_layout()
             plt.pause(0.01)
 
-            # ----------------------------
-            # Propose new
-            # ----------------------------
+            # Propose new samples
             X_new = []
             for x in X:
                 x_new = self.proposal.rvs(x_cond=x)
@@ -127,8 +126,10 @@ class SMC:
             log_weights_new = []
             for x, x_new, logw in zip(X, X_new, log_weights):
                 log_weights_new.append(
-                    self.log_target(x_new, data=data)
-                    - self.log_target(x, data=data)
+                    self.log_target(params=x_new, data=data) -
+                    self.log_target(params=x, data=data) +
+                    self.L_kernel.logpdf(x=x, x_cond=x_new) -
+                    self.proposal.logpdf(x=x_new, x_cond=x)
                     + logw
                 )
 
@@ -136,9 +137,7 @@ class SMC:
             log_weights = np.array(log_weights_new)
             X = np.array(X_new)
 
-        # ----------------------------
-        # Finalize plot
-        # ----------------------------
+        # Finalise plot
         plt.ioff()
         plt.show()
 

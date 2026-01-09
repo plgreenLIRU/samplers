@@ -12,7 +12,7 @@ def logp(params, data):
 # Initial proposal
 q0 = norm(loc=0, scale=3)
 
-# General proposal
+# Proposal
 class Proposal(Proposal_Base):
 
     def __init__(self):
@@ -25,6 +25,16 @@ class Proposal(Proposal_Base):
     def logpdf(self, x, x_cond):
         return -0.5 * np.log(self.std**2) - 1 / (2 * self.std**2) * (x - x_cond)**2
 
+# L-kernel
+class L_kernel(Proposal_Base):
+
+    def __init__(self):
+        self.std = 0.05
+
+    def logpdf(self, x, x_cond):
+        return -0.5 * np.log(self.std**2) - 1 / (2 * self.std**2) * (x - x_cond)**2        
+
 q = Proposal()
-smc = SMC(log_target=logp, proposal0=q0, proposal=q)
+l = L_kernel()
+smc = SMC(log_target=logp, proposal0=q0, proposal=q, L_kernel=l)
 smc.generate_samples(n_samples=1000, data=None, K=100)

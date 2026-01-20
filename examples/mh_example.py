@@ -9,7 +9,7 @@ def logp(params, data):
     return -0.5 * np.log(v) - 1 / (2 * v) * (params[0] - mu)**2
 
 s = MH(log_target=logp)
-all_samples, ar = s.generate_samples(all_params_current=[[0], [1]], data=None, proposal_width=0.1, n_samples=5000, n_chains=2, plot_live=False)
+all_samples, ar = s.generate_samples(params_current=[[0], [1]], data=None, proposal_width=0.1, n_samples=5000, n_chains=2, plot_live=False)
 
 fig, ax = plt.subplots()
 for samples in all_samples:

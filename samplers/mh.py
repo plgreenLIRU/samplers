@@ -9,20 +9,20 @@ class MH:
         params_new = params + proposal_width * np.random.randn(len(params))
         return params_new
 
-    def generate_samples(self, all_params_current, data, proposal_width, n_samples, n_chains=1, plot_live=False):
+    def generate_samples(self, params_current, data, proposal_width, n_samples, n_chains=1, plot_live=False):
         """
         """
 
         # Initialise algorithm
-        n_params = len(all_params_current[0])
+        n_params = len(params_current[0])
 
-        all_samples = []
-        all_logp_current = []
-        all_n_accepted = []
-        for params_current in all_params_current:
-            all_samples.append(np.zeros((n_samples, n_params), dtype=float))
-            all_logp_current.append(self.log_target(params=params_current, data=data))
-            all_n_accepted.append(0)
+        samples = []
+        logp_current = []
+        n_accepted = []
+        for params in params_current:
+            samples.append(np.zeros((n_samples, n_params), dtype=float))
+            logp_current.append(self.log_target(params=params, data=data))
+            n_accepted.append(0)
 
         proposal_width = np.array(proposal_width, dtype=float)  # can remove?
 
@@ -42,20 +42,20 @@ class MH:
         i = 0
         while i < n_samples:
 
-            for params_current, logp_current, samples, n_accepted in zip(all_params_current, all_logp_current, all_samples, all_n_accepted):
+            for chain in range(n_chains):
 
                 # Proposal
-                params_prop = self.proposal(params_current, proposal_width)
+                params_prop = self.proposal(params_current[chain], proposal_width)
                 logp_prop = self.log_target(params_prop, data=data)
 
                 # Accept reject
-                log_alpha = logp_prop - logp_current
+                log_alpha = logp_prop - logp_current[chain]
                 if np.log(np.random.rand()) < log_alpha:
-                    params_current = params_prop
-                    logp_current = logp_prop
-                    n_accepted += 1
+                    params_current[chain] = params_prop
+                    logp_current[chain] = logp_prop
+                    n_accepted[chain] += 1
 
-                samples[i] = params_current
+                samples[chain][i] = params_current[chain]
 
             # Plot option
             if plot_live and i % 50 == 0:
@@ -73,9 +73,9 @@ class MH:
             plt.show()
 
         final_acc_ratio = []
-        for n_accepted in all_n_accepted:
-            final_acc_ratio.append(100 * n_accepted / n_samples)
-        return all_samples, final_acc_ratio
+        for n in n_accepted:
+            final_acc_ratio.append(100 * n / n_samples)
+        return samples, final_acc_ratio
 
     def post_process(self, samples, param_names, burn_in=0):
         """

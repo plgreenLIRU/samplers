@@ -3,15 +3,16 @@ from matplotlib import pyplot as plt
 
 class MH:
     def __init__(self, log_target):
+        # Initialize the Metropolis-Hastings sampler with a log-target distribution
         self.log_target = log_target
 
     def proposal(self, params, proposal_width):
+        # Generate a new proposal by adding Gaussian noise to current parameters
         params_new = params + proposal_width * np.random.randn(len(params))
         return params_new
 
     def generate_samples(self, params_current, data, proposal_width, n_samples, n_chains=1, plot_live=False):
-        """
-        """
+        # Run Metropolis-Hastings MCMC to generate posterior samples
 
         # Initialise algorithm
         n_params = len(params_current[0])
@@ -82,11 +83,8 @@ class MH:
         return samples, final_acc_ratio
 
     def post_process(self, samples, param_names, burn_in=0):
-        """
-        Plot MCMC results with histograms (top row) and trace plots (bottom row),
-        showing burn-in samples in a different colour on the traces.
+        # Visualize posterior samples with histograms after removing burn-in period
 
-        """
         n_chains = len(samples)
         n_samples, n_params = samples[0].shape
    

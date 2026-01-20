@@ -86,40 +86,20 @@ class MH:
         Plot MCMC results with histograms (top row) and trace plots (bottom row),
         showing burn-in samples in a different colour on the traces.
 
-        Parameters
-        ----------
-        samples : np.ndarray
-            MCMC samples, shape (n_samples, n_params)
-        param_names : list of str
-            Names of the parameters
-        burn_in : int
-            Number of initial samples considered burn-in
         """
-        n_samples, n_params = samples.shape
-        samples_post = samples[burn_in:]
-
-        fig, axes = plt.subplots(2, n_params)
-
+        n_chains = len(samples)
+        n_samples, n_params = samples[0].shape
+   
         for i in range(n_params):
-            # ------------------
-            # Histogram (top row)
-            # ------------------
-            axes[0, i].hist(samples_post[:, i], bins=30, color='skyblue', edgecolor='k', density=True)
-            axes[0, i].set_xlabel(param_names[i])
-            axes[0, i].set_ylabel('Density')
+            fig, ax = plt.subplots()
+            s = np.array([])
+            for chain in range(n_chains):
+                s = np.append(s, samples[chain][burn_in:, i])
 
-            # ------------------
-            # Trace plot (bottom row)
-            # ------------------
-            # burn-in in red
-            if burn_in > 0:
-                axes[1, i].plot(np.arange(burn_in), samples[:burn_in, i], color='red', label='burn-in')
-            # post burn-in in blue
-            axes[1, i].plot(np.arange(burn_in, n_samples), samples[burn_in:, i], color='steelblue', label='post burn-in')
-            axes[1, i].set_xlabel('Iteration')
-            axes[1, i].set_ylabel(param_names[i])
-            axes[1, i].legend()
+            # Histogram (top row)
+            ax.hist(s, bins=30, color='skyblue', edgecolor='k', density=True)
+            ax.set_xlabel(param_names[i])
+            ax.set_ylabel('Density')
 
         plt.tight_layout()
-
-        return samples_post
+        plt.show()

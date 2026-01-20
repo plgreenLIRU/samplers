@@ -32,10 +32,13 @@ class MH:
             fig, axes = plt.subplots(n_params, 1, sharex=True, figsize=(8, 2 * n_params))
             if n_params == 1:
                 axes = [axes]
-            lines = []
-            for ax in axes:
-                line, = ax.plot([], [], lw=1)
-                lines.append(line)
+            all_lines = []
+            for _ in range(n_chains):
+                lines = []
+                for ax in axes:
+                    line, = ax.plot([], [], lw=1)
+                    lines.append(line)
+                all_lines.append(lines)
             plt.show()
 
         # MCMC loop
@@ -59,10 +62,11 @@ class MH:
 
             # Plot option
             if plot_live and i % 50 == 0:
-                for j in range(n_params):
-                    lines[j].set_data(np.arange(i + 1), samples[:i + 1, j])
-                    axes[j].relim()
-                    axes[j].autoscale_view()
+                for chain in range(n_chains):
+                    for j in range(n_params):
+                        all_lines[chain][j].set_data(np.arange(i + 1), samples[chain][:i + 1, j])
+                        axes[j].relim()
+                        axes[j].autoscale_view()
                 plt.pause(0.001)
 
             i += 1

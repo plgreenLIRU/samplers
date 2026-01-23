@@ -87,6 +87,8 @@ class MH:
 
         n_chains = len(samples)
         n_samples, n_params = samples[0].shape
+        results_figures = []
+        all_samples = []
    
         for i in range(n_params):
             fig, ax = plt.subplots()
@@ -94,10 +96,12 @@ class MH:
             for chain in range(n_chains):
                 s = np.append(s, samples[chain][burn_in:, i])
 
+            all_samples.append(s)
+
             # Histogram (top row)
             ax.hist(s, bins=30, color='skyblue', edgecolor='k', density=True)
             ax.set_xlabel(param_names[i])
             ax.set_ylabel('Density')
+            results_figures.append(fig)
 
-        plt.tight_layout()
-        plt.show()
+        return results_figures, np.array(all_samples)

@@ -104,4 +104,4 @@ class MH:
             ax.set_ylabel('Density')
             results_figures.append(fig)
 
-        return results_figures, np.array(all_samples)
+        return results_figures, np.array(all_samples).T

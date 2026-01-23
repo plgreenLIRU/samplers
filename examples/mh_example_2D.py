@@ -10,7 +10,9 @@ def logp(params, data):
 
 mh = MH(log_target=logp)
 samples, ar = mh.generate_samples(params_current=[[0, 0], [1, 1], [2, 2], [3, 3]],
-                                  data=None, proposal_width=0.1, n_samples=5000,
+                                  data=None, proposal_width=0.1, n_samples=2000,
                                   n_chains=4, plot_live=True)
 
-mh.post_process(samples=samples, param_names=['theta1', 'theta2'], burn_in=1000)
+results_figs, all_samples = mh.post_process(samples=samples, param_names=['theta1', 'theta2'], burn_in=1000)
+
+plt.show()
